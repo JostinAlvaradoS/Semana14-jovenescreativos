@@ -70,8 +70,8 @@ const servidor = http.createServer((req, res) => {
   //    de SU proyecto.
 });
 
-servidor.listen(3000, () => {
-  console.log("Servidor corriendo en http://localhost:3000");
+servidor.listen(8000, () => {
+  console.log("Servidor corriendo en http://localhost:8000");
 });
 // listen() enciende el servidor y lo deja ESCUCHANDO en el
 // puerto 3000. localhost = "este mismo computador".
