@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!-- ═══════════════════════════════════════════════════════════════
+     DEMO: EL ÚNICO HILO DE JAVASCRIPT — versión evidencia
+     🔵 ENTORNO: NAVEGADOR — abrir con doble clic o Live Server
+     🎬 Momento: Bloque 3 (~min 00:17), después de la analogía
+        del restaurante y ANTES de promesas.
+
+     CÓMO PRESENTARLA (pantalla dividida recomendada):
+       · Izquierda: esta página en el navegador.
+       · Derecha: este mismo archivo en VS Code, para señalar
+         el código de cada cosa mientras pasa.
+
+     GUION (2-3 min):
+     1. "¿Dónde está el JavaScript de esta página?" → señalar el
+        <script> de abajo. El navegador lo lee y lo ejecuta con
+        su ÚNICO hilo. Todo lo que ven moverse... es ese hilo.
+     2. Señalar el SEMÁFORO: verde = el hilo está libre,
+        atendiendo la lista (bola, reloj, tus teclas).
+     3. Clic en 🖱 CONTAR CLIC un par de veces → aparecen en el
+        registro AL INSTANTE, cada uno con su hora. El hilo los
+        atiende apenas llegan.
+     4. "Ahora voy a ocupar al hilo 3 segundos SIN soltarlo"
+        → clic en el botón ROJO. Semáforo en rojo. Bola clavada,
+        reloj pasmado, no se puede escribir.
+     5. ⭐ EL EXPERIMENTO CLAVE: durante el congelamiento, hagan
+        clic varias veces en 🖱 CONTAR CLIC. No pasa nada...
+        hasta que el hilo se libera: TODOS los clics llegan de
+        golpe, con LA MISMA hora. No se perdieron: estaban
+        HACIENDO FILA en la cola, esperando al único hilo.
+     6. Botón VERDE: la misma espera, pero encargada. Semáforo
+        sigue verde, todo vivo, y el aviso llega a los 3 s.
+     7. Remate: "fetch funciona como el botón verde SÍ o SÍ.
+        JavaScript ni siquiera te deja hacerlo como el rojo.
+        Por eso existen las promesas — vamos a verlas."
+     ═══════════════════════════════════════════════════════════════ -->
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>El único hilo de JavaScript</title>
+
+<!-- ────────────────────────────────────────────────────────────
+     ESTO ES CSS: solo apariencia. Aquí NO hay lógica.
+     ──────────────────────────────────────────────────────────── -->
+<style>
+  :root { --naranja:#EA7307; --fondo:#121212; --panel:#1A1A1A; --borde:#333;
+          --texto:#F2F2F2; --gris:#B3B3B3; --rojo:#DB4051; --verde:#33A958; }
+  * { box-sizing:border-box; }
+  body { background:var(--fondo); color:var(--texto); font-family:system-ui,sans-serif;
+         max-width:720px; margin:28px auto; padding:0 16px; line-height:1.55; }
+  h1 { font-size:24px; margin:0 0 4px; } h1 span { color:var(--naranja); }
+  .panel { background:var(--panel); border:1px solid var(--borde); border-radius:16px;
+           padding:16px 18px; margin:14px 0; }
+  .titulo-panel { font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+                  color:var(--naranja); margin-bottom:10px; font-weight:600; }
+  #pista { position:relative; height:56px; background:#0d0d0d; border-radius:12px; overflow:hidden; }
+  #bola { position:absolute; top:16px; width:24px; height:24px; border-radius:50%; background:var(--naranja); }
+  #reloj { font-variant-numeric:tabular-nums; font-size:20px; }
+  input { width:100%; padding:11px; border-radius:10px; border:1px solid var(--borde);
+          background:#0d0d0d; color:var(--texto); font-size:15px; margin-top:10px; }
+  #semaforo { display:flex; align-items:center; gap:12px; }
+  #luz { width:22px; height:22px; border-radius:50%; background:var(--verde);
+         box-shadow:0 0 12px var(--verde); flex-shrink:0; }
+  #luz.ocupado { background:var(--rojo); box-shadow:0 0 12px var(--rojo); }
+  #haciendo { font-size:15px; }
+  button { border:none; border-radius:999px; padding:12px 18px; font-size:14px;
+           font-weight:600; cursor:pointer; margin:4px 6px 4px 0; }
+  #btnClic  { background:#262626; color:var(--texto); border:1px solid var(--naranja); }
+  #btnSync  { background:var(--rojo); color:#fff; }
+  #btnAsync { background:var(--verde); color:#fff; }
+  #registro { background:#0d0d0d; border-radius:10px; padding:12px 14px; font-family:ui-monospace,Consolas,monospace;
+              font-size:13px; line-height:1.7; max-height:180px; overflow-y:auto; }
+  #registro .hora { color:var(--naranja); }
+  #registro .fila-nueva { color:#7fd99a; }
+</style>
+</head>
+<body>
+
+<!-- ────────────────────────────────────────────────────────────
+     ESTO ES HTML: la estructura. Tampoco hay lógica aquí —
+     solo cajas con un "id" para que el JS las encuentre luego.
+     ──────────────────────────────────────────────────────────── -->
+
+<h1>El <span>único hilo</span> de JavaScript</h1>
+<p style="color:var(--gris);font-size:14px;margin-top:0">Todo lo que se mueve en esta página lo mueve UNA sola cosa: el hilo de JS. Vamos a verlo trabajar... y a verlo atascado.</p>
+
+<div class="panel">
+  <div class="titulo-panel">El semáforo del hilo</div>
+  <div id="semaforo">
+    <div id="luz"></div>
+    <div id="haciendo">Libre — atendiendo la lista: animar bola, actualizar reloj, escuchar clics y teclas.</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="titulo-panel">Señales de vida (tareas que el hilo atiende sin parar)</div>
+  <div id="pista"><div id="bola"></div></div>
+  <p style="margin:10px 0 0">⏱ Cronómetro de la demo: <span id="reloj">0.0 s</span></p>
+  <input id="campo" placeholder="Escribe aquí — tus teclas también son tareas del hilo" />
+</div>
+
+<div class="panel">
+  <div class="titulo-panel">Los experimentos</div>
+  <button id="btnClic">🖱 Contar clic (haz clic también DURANTE el bloqueo)</button>
+  <br>
+  <button id="btnSync">🔴 Ocupar al hilo 3 s SIN soltarlo (síncrono)</button>
+  <button id="btnAsync">🟢 Encargar la espera de 3 s (asíncrono)</button>
+</div>
+
+<div class="panel">
+  <div class="titulo-panel">Registro: lo que el hilo va procesando, con su hora</div>
+  <div id="registro"></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     AQUÍ EMPIEZA EL JAVASCRIPT.
+     Esta etiqueta <script> es la respuesta a "¿dónde está JS?":
+     el navegador llega aquí, lee este código y lo ejecuta con
+     su único hilo. Todo lo de arriba era estructura y pintura;
+     TODO el comportamiento vive de esta línea hacia abajo.
+     ════════════════════════════════════════════════════════════ -->
+<script>
+
+/* [1] CONEXIONES CON EL HTML ─────────────────────────────────
+   getElementById = "navegador, pásame la caja con este id".
+   Así el JS agarra las piezas de la página para manipularlas. */
+const luz      = document.getElementById("luz");
+const haciendo = document.getElementById("haciendo");
+const bola     = document.getElementById("bola");
+const pista    = document.getElementById("pista");
+const reloj    = document.getElementById("reloj");
+const registro = document.getElementById("registro");
+
+/* [2] EL CRONÓMETRO Y EL REGISTRO ────────────────────────────
+   anotar() escribe una línea con la hora exacta (segundos desde
+   que abrió la página). La hora es LA EVIDENCIA: cuando el hilo
+   se bloquee, verás varios clics anotados con LA MISMA hora,
+   porque se procesaron todos juntos al liberarse la fila.     */
+const inicio = Date.now();
+const ahora = () => ((Date.now() - inicio) / 1000).toFixed(1) + " s";
+
+function anotar(texto) {
+  const linea = document.createElement("div");
+  linea.className = "fila-nueva";
+  linea.innerHTML = '<span class="hora">[' + ahora() + ']</span> ' + texto;
+  registro.prepend(linea);                 // la más nueva arriba
+  setTimeout(() => linea.classList.remove("fila-nueva"), 800);
+}
+
+/* [3] SEÑAL DE VIDA #1: LA BOLA ──────────────────────────────
+   requestAnimationFrame le pide al hilo: "cuando vayas a pintar
+   el próximo cuadro, ejecuta esto". Cada cuadro (~60 por segundo)
+   es UNA TAREA MÁS en la lista del único hilo. Si el hilo se
+   ocupa en otra cosa, no hay cuadros → la bola se clava.       */
+let x = 0, dir = 1;
+function animarBola() {
+  x += dir * 3;
+  if (x > pista.clientWidth - 24 || x < 0) dir *= -1;
+  bola.style.left = x + "px";
+  requestAnimationFrame(animarBola);       // se re-agenda a sí misma
+}
+animarBola();
+
+/* [4] SEÑAL DE VIDA #2: EL RELOJ ─────────────────────────────
+   setInterval agenda una tarea cada 100 ms: "actualiza el texto".
+   Misma historia: es el mismo hilo. Hilo ocupado = reloj pasmado. */
+setInterval(() => { reloj.textContent = ahora(); }, 100);
+
+/* [5] EL CONTADOR DE CLICS: LA PRUEBA DE LA COLA ─────────────
+   Cada clic genera una tarea que entra a la COLA del hilo.
+   · Con el hilo libre: se procesa al instante → cada clic queda
+     anotado con su propia hora.
+   · Con el hilo bloqueado: los clics NO SE PIERDEN — hacen fila.
+     Al liberarse el hilo, se procesan todos seguidos y quedan
+     anotados con la MISMA hora. Esa es la cola, hecha visible. */
+let clics = 0;
+document.getElementById("btnClic").onclick = () => {
+  clics++;
+  anotar("🖱 clic #" + clics + " procesado");
+};
+
+/* [6] 🔴 EL BOTÓN DEL BLOQUEO (la forma equivocada) ──────────
+   Un bucle while que no suelta al hilo durante 3 segundos.
+   El hilo queda atrapado dando vueltas aquí: no anima, no
+   actualiza el reloj, no procesa clics ni teclas, NO PINTA.   */
+document.getElementById("btnSync").onclick = () => {
+
+  // Primero cambiamos el semáforo a rojo...
+  luz.classList.add("ocupado");
+  haciendo.textContent = "OCUPADO: atrapado en un bucle. Nada más puede pasar.";
+  anotar("🔴 el hilo entra al bucle bloqueante (3 s)...");
+
+  // ...PERO ojo a este truco (y es un mini-tema en sí mismo):
+  // PINTAR la pantalla también es tarea del hilo. Si bloqueamos
+  // YA MISMO, el semáforo nunca alcanzaría a verse rojo.
+  // Le damos 100 ms al navegador para pintar, y LUEGO bloqueamos:
+  setTimeout(() => {
+    const t = Date.now();
+    while (Date.now() - t < 3000) {
+      // El hilo está AQUÍ, dando vueltas sin soltar.
+      // Es el mesero parado frente a la cocina.
+    }
+    // ── 3 segundos después, el hilo por fin se libera: ──
+    luz.classList.remove("ocupado");
+    haciendo.textContent = "Libre otra vez. Mira el registro: los clics que hiciste llegaron TODOS JUNTOS, con la misma hora.";
+    anotar("🔴 el hilo salió del bucle — ahora procesa la fila acumulada ↓");
+  }, 100);
+};
+
+/* [7] 🟢 EL BOTÓN CORRECTO: ENCARGAR Y SEGUIR ────────────────
+   setTimeout NO ocupa al hilo: le encarga la espera al entorno
+   (el navegador) y el hilo queda LIBRE para bola, reloj y clics.
+   A los 3 s, el entorno mete el "aviso" a la cola y el hilo lo
+   atiende. Así funciona fetch por dentro — por eso devuelve
+   una promesa: el comprobante de este mismo mecanismo.        */
+document.getElementById("btnAsync").onclick = () => {
+  anotar("🟢 espera de 3 s ENCARGADA al entorno — el hilo sigue libre");
+  haciendo.textContent = "Libre — la espera la lleva el entorno. Escribe, haz clics: todo responde.";
+
+  setTimeout(() => {
+    anotar("🟢 ¡llegó el aviso! El hilo lo atiende y seguimos. Nada se congeló ✅");
+  }, 3000);
+};
+
+/* NOTA PARA EL MENTOR (si preguntan):
+   "¿De verdad existe pedir datos de forma bloqueante?"
+   Existió: XMLHttpRequest síncrono — obsoleto y castigado por
+   los navegadores por exactamente lo que acaban de ver.
+   fetch nació asíncrono a propósito: el lenguaje te OBLIGA a
+   hacerlo bien. Las promesas no son un lujo: son el idioma
+   oficial para hablar con la red.                             */
+</script>
+</body>
+</html>

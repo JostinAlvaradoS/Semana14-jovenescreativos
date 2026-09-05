@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     PASO 5 · EL MUNDO SIN NODE (así han trabajado TODO el programa)
+     🎬 Abrir con doble clic (¡a propósito SIN Live Server!)
+     y mirar la barra de direcciones del navegador.
+     ============================================================
+
+     Esta es una página como las que los estudiantes han hecho
+     desde la S1: HTML + CSS + JS, abierta directo desde el disco.
+
+     👀 OBSERVAR EN VIVO — la barra de direcciones dice:
+
+        file:///C:/...(ruta)/index.html
+        ↑↑↑↑
+        El protocolo es file:// — el navegador está LEYENDO UN
+        ARCHIVO de tu disco, como quien abre un Word.
+
+     ⭐ LAS TRES VERDADES DEL MUNDO SIN NODE:
+
+     1. TODO corre en TU máquina: el navegador descarga nada,
+        no le pide nada a nadie — abre el archivo y lo pinta.
+
+     2. NADIE MÁS puede verla. Si le pasas la URL file:///C:/...
+        a un amigo, en SU computador no existe ese archivo.
+        Tu página vive encerrada en tu disco.
+
+     3. NO HAY NADIE "RESPONDIENDO". No existe un programa
+        escuchando peticiones: no hay peticiones, solo lectura
+        de archivo.
+
+     💬 PREGUNTA PUENTE (lanzarla al grupo antes de pasar al 06):
+     "Entonces… si mi emprendimiento necesita que un cliente vea
+      esta página desde SU celular, ¿qué me falta?"
+     → Falta un programa encendido en algún computador, ESCUCHANDO
+       en una dirección, que RESPONDA la página a quien la pida.
+       Ese programa es un SERVIDOR. Y eso es lo que vamos a
+       construir con Node en el paso 06.
+
+     📝 Nota: Live Server también es un servidor (por eso la URL
+     cambia a http://127.0.0.1:5500), pero es uno "prestado" por
+     VS Code, solo para desarrollar. En el 06 construimos el
+     nuestro, y entendemos qué hace por dentro.
+     ============================================================ -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi emprendimiento · versión SIN servidor</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+    .producto { border: 2px solid #333; border-radius: 8px; padding: 12px; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>🛍️ Mi emprendimiento</h1>
+  <p>Esta página vive SOLO en este computador (mira la barra de direcciones: <code>file://</code>).</p>
+
+  <div id="catalogo"></div>
+
+  <script>
+    // Los datos están QUEMADOS en el código (hardcoded):
+    // nadie los "sirve", viajan dentro del propio archivo.
+    const productos = [
+      { nombre: "Producto 1", precio: 10 },
+      { nombre: "Producto 2", precio: 25 },
+      { nombre: "Producto 3", precio: 18 },
+       { nombre: "Producto 3", precio: 18 },
+        { nombre: "Producto 3", precio: 18 },
+         { nombre: "Producto 3", precio: 18 },
+          { nombre: "Producto 3", precio: 18 },
+    ];
+
+    // El navegador ejecuta este JS y pinta el DOM — todo local:
+    const catalogo = document.getElementById("catalogo");
+    catalogo.innerHTML = productos
+      .map((p) => `<div class="producto"><b>${p.nombre}</b> — $${p.precio}</div>`)
+      .join("");
+  </script>
+</body>
+</html>
