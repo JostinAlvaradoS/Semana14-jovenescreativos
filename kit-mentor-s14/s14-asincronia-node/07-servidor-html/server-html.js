@@ -62,4 +62,8 @@ servidor.listen(3000, () => {
 // una API (dos awaits: sobre y carta) → y Node te deja usar ese
 // mismo JavaScript para estar DEL OTRO LADO: ser tú quien
 // responde las peticiones.
+//
+// → Siguiente: 08-servidor-pokeapi/ (el servidor sale a buscar
+//   datos REALES a PokéAPI — y descubrimos que todo eso queda
+//   del lado del servidor, invisible para quien visita).
 // ============================================================
